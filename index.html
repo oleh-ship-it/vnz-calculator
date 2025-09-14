@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор вартості ВНЖ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="checkbox"], input[type="radio"] {
+            margin-right: 10px;
+        }
+        .total {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+        }
+        .disabled {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Калькулятор вартості ВНЖ</h1>
+    <div class="container">
+        <form id="costForm">
+            <div class="form-group">
+                <label>Тип заявки:</label>
+                <label><input type="radio" name="applicationType" value="first" checked> Перша подача</label>
+                <label><input type="radio" name="applicationType" value="extension"> Продовження</label>
+            </div>
+            <div class="form-group">
+                <label for="citizenship">Громадянство:</label>
+                <select id="citizenship" name="citizenship">
+                    <option value="ua">Україна</option>
+                    <option value="by">Білорусь</option>
+                    <option value="ge">Грузія</option>
+                    <option value="other">Інша</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="translateCertificate" name="translateCertificate"> Потрібен переклад довідки про несудимість</label>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="personalEscort" name="personalEscort"> Потрібне особисте супроводження</label>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="truckDriver" name="truckDriver"> Я є далекобійником</label>
+            </div>
+            <div class="form-group" id="addressRegistrationGroup">
+                <label><input type="checkbox" id="addressRegistration" name="addressRegistration"> Потрібна прописка (адресна реєстрація)</label>
+            </div>
+        </form>
+        <div class="total" id="totalCost">Загальна вартість: 0&nbsp;€</div>
+    </div>
+    <script>
+        // Базові тарифи (можна скоригувати під реальні значення)
+        const baseCosts = {
+            first: 200,
+            extension: 150
+        };
+        const translationCost = 50;
+        const escortCost = 100;
+        const registrationCost = 70;
+
+        const form = document.getElementById('costForm');
+        const totalCostDiv = document.getElementById('totalCost');
+        const truckDriverCheckbox = document.getElementById('truckDriver');
+        const addressRegistrationGroup = document.getElementById('addressRegistrationGroup');
+        const addressRegistrationCheckbox = document.getElementById('addressRegistration');
+
+        function calculateTotal() {
+            // Визначаємо базову вартість залежно від типу заявки
+            const appType = form.elements['applicationType'].value;
+            let total = baseCosts[appType];
+            // Опціональні послуги
+            if (form.elements['translateCertificate'].checked) {
+                total += translationCost;
+            }
+            if (form.elements['personalEscort'].checked) {
+                total += escortCost;
+            }
+            // Реєстрація необхідна лише коли користувач не є далекобійником
+            if (!form.elements['truckDriver'].checked && form.elements['addressRegistration'].checked) {
+                total += registrationCost;
+            }
+            // Відображаємо результат
+            totalCostDiv.textContent = `Загальна вартість: ${total.toFixed(2)} €`;
+        }
+
+        function handleTruckDriverChange() {
+            if (truckDriverCheckbox.checked) {
+                // Сховати поле прописки та зняти позначку
+                addressRegistrationGroup.style.display = 'none';
+                addressRegistrationCheckbox.checked = false;
+            } else {
+                // Показати поле прописки
+                addressRegistrationGroup.style.display = 'block';
+            }
+            calculateTotal();
+        }
+
+        // Додати слухачі подій для всіх змін
+        form.addEventListener('change', function(event) {
+            // Обробити спеціальну логіку для далекобійника
+            if (event.target.id === 'truckDriver') {
+                handleTruckDriverChange();
+            } else {
+                calculateTotal();
+            }
+        });
+        // Первинний розрахунок
+        calculateTotal();
+    </script>
+</body>
+</html>
