@@ -76,18 +76,33 @@
             <div class="form-group" id="addressRegistrationGroup">
                 <label><input type="checkbox" id="addressRegistration" name="addressRegistration"> Потрібна прописка (адресна реєстрація)</label>
             </div>
+
+            <!-- Поле для BOK‑коду, показується лише при продовженні -->
+            <div class="form-group" id="bokCodeGroup" style="display:none;">
+                <label>У вас є BOK‑код?</label>
+                <label><input type="radio" name="bokCode" value="yes" checked> Так</label>
+                <label><input type="radio" name="bokCode" value="no"> Ні</label>
+            </div>
         </form>
         <div class="total" id="totalCost">Загальна вартість: 0&nbsp;€</div>
     </div>
     <script>
-        // Базові тарифи (можна скоригувати під реальні значення)
-        const baseCosts = {
-            first: 200,
-            extension: 150
+        // Вартість послуг та додаткові платежі
+        // Базова вартість наших послуг однакова для першої подачі та продовження
+        const serviceCost = 411;
+        // Колки (оплата на міграційній): різна для першої подачі та продовження
+        const kolkyCost = {
+            first: 289,
+            extension: 179
         };
-        const translationCost = 50;
+        // Переклад довідки про несудимість
+        const translationCost = 150;
+        // Особистий супровід
         const escortCost = 100;
-        const registrationCost = 70;
+        // Прописка в Братиславі
+        const registrationCost = 350;
+        // Додаткова оплата за відсутній BOK‑код при продовженні
+        const bokCodeAbsentCost = 100;
 
         const form = document.getElementById('costForm');
         const totalCostDiv = document.getElementById('totalCost');
@@ -95,10 +110,16 @@
         const addressRegistrationGroup = document.getElementById('addressRegistrationGroup');
         const addressRegistrationCheckbox = document.getElementById('addressRegistration');
 
+        // Група з питанням про BOK‑код
+        const bokCodeGroup = document.getElementById('bokCodeGroup');
+
         function calculateTotal() {
-            // Визначаємо базову вартість залежно від типу заявки
+            // Тип заявки: 'first' або 'extension'
             const appType = form.elements['applicationType'].value;
-            let total = baseCosts[appType];
+            // Початкова сума: наші послуги
+            let total = serviceCost;
+            // Додаємо обов'язкові колки залежно від типу заявки
+            total += kolkyCost[appType];
             // Опціональні послуги
             if (form.elements['translateCertificate'].checked) {
                 total += translationCost;
@@ -106,9 +127,16 @@
             if (form.elements['personalEscort'].checked) {
                 total += escortCost;
             }
-            // Реєстрація необхідна лише коли користувач не є далекобійником
+            // Прописка необхідна лише коли користувач не є далекобійником
             if (!form.elements['truckDriver'].checked && form.elements['addressRegistration'].checked) {
                 total += registrationCost;
+            }
+            // Для продовження враховуємо наявність BOK‑коду
+            if (appType === 'extension') {
+                const bokCodeValue = form.elements['bokCode'].value;
+                if (bokCodeValue === 'no') {
+                    total += bokCodeAbsentCost;
+                }
             }
             // Відображаємо результат
             totalCostDiv.textContent = `Загальна вартість: ${total.toFixed(2)} €`;
@@ -126,17 +154,32 @@
             calculateTotal();
         }
 
+        // Обробка зміни типу заявки (перша/продовження)
+        function handleApplicationTypeChange() {
+            const appType = form.elements['applicationType'].value;
+            if (appType === 'extension') {
+                bokCodeGroup.style.display = 'block';
+            } else {
+                bokCodeGroup.style.display = 'none';
+            }
+            calculateTotal();
+        }
+
         // Додати слухачі подій для всіх змін
         form.addEventListener('change', function(event) {
             // Обробити спеціальну логіку для далекобійника
             if (event.target.id === 'truckDriver') {
                 handleTruckDriverChange();
+            }
+            if (event.target.name === 'applicationType') {
+                handleApplicationTypeChange();
             } else {
                 calculateTotal();
             }
         });
         // Первинний розрахунок
-        calculateTotal();
+        // Показати/сховати поле BOK‑коду відповідно до стартового вибору
+        handleApplicationTypeChange();
     </script>
 </body>
 </html>
