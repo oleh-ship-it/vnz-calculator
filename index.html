@@ -3,93 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор вартості ВНЖ</title>
+    <title>Калькулятор вартості послуг - документи</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f5f7fa; /* світлий сірий фон */
             margin: 0;
             padding: 20px;
+            color: #2c3e50; /* темний текст */
         }
         h1 {
-            color: #333;
+            color: #4e73df; /* глибокий синій для заголовка */
             text-align: center;
             margin-bottom: 20px;
+            font-size: 2em;
+            font-weight: 600;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eaeaea;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #2c3e50;
         }
-        select, input[type="checkbox"], input[type="radio"] {
-            margin-right: 10px;
+        /* Лейбли у контейнері мають нормальну вагу */
+        .container label {
+            font-weight: 400;
+        }
+        select,
+        input[type="checkbox"],
+        input[type="radio"] {
+            margin-right: 8px;
+        }
+        /* Колір акценту для чекбоксів та радіо‑кнопок */
+        input[type="checkbox"],
+        input[type="radio"] {
+            accent-color: #4e73df;
         }
         .total {
             margin-top: 20px;
             font-size: 1.2em;
-            font-weight: bold;
+            font-weight: 600;
+            text-align: center;
+            color: #4e73df;
+        }
+        .actions {
+            margin-top: 20px;
             text-align: center;
         }
-        .disabled {
-            color: #888;
+        .actions button {
+            background-color: #4e73df;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+        .actions button:hover {
+            background-color: #3c5fb3;
+        }
+        /* Відтінки для неактивних кнопок */
+        .actions button:disabled {
+            background-color: #b0c4e6;
+            cursor: default;
+        }
+        .documents {
+            margin-top: 20px;
+            background-color: #ffffff;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .documents h2 {
+            margin-top: 0;
+            color: #4e73df;
+            font-size: 1.2em;
+        }
+        .documents ul {
+            padding-left: 20px;
+        }
+        .documents li {
+            margin-bottom: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Калькулятор вартості ВНЖ</h1>
+    <h1>Калькулятор вартості послуг - документи</h1>
     <div class="container">
         <form id="costForm">
             <div class="form-group">
                 <label>Тип заявки:</label>
-                <label><input type="radio" name="applicationType" value="first" checked> Перша подача</label>
-                <label><input type="radio" name="applicationType" value="extension"> Продовження</label>
+                <label><input type="radio" name="applicationType" value="first"> Перша подача&nbsp;ВНЖ</label>
+                <label><input type="radio" name="applicationType" value="extension"> Продовження&nbsp;ВНЖ</label>
+                <label><input type="radio" name="applicationType" value="code95"> Код&nbsp;95&nbsp;(Литва)</label>
             </div>
-            <div class="form-group">
-                <label for="citizenshipInput">Громадянство (почніть вводити):</label>
-                <!-- Текстове поле з автодоповненням для вибору країни -->
-                <input type="text" id="citizenshipInput" name="citizenship" list="citizenshipList" placeholder="Почніть вводити країну">
-                <datalist id="citizenshipList">
-                    <option value="Україна"></option>
-                    <option value="Білорусь"></option>
-                    <option value="Грузія"></option>
-                    <option value="Словаччина"></option>
-                    <option value="Польща"></option>
-                    <option value="Чехія"></option>
-                    <option value="Угорщина"></option>
-                    <option value="Німеччина"></option>
-                    <option value="Австрія"></option>
-                    <option value="Інша"></option>
-                </datalist>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="translateCertificate" name="translateCertificate"> Потрібен переклад довідки про несудимість</label>
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="truckDriver" name="truckDriver"> Я є далекобійником</label>
-            </div>
-            <div class="form-group" id="addressRegistrationGroup">
-                <label><input type="checkbox" id="addressRegistration" name="addressRegistration"> Потрібна прописка (адресна реєстрація)</label>
+            <!-- Блок додаткових полів, які з'являються після вибору типу заявки -->
+            <div id="additionalFields" style="display:none; margin-top:20px; padding-top:15px; border-top:1px solid #eaeaea;">
+                <div class="form-group" id="translationGroup" style="display:none;">
+                    <!-- Питання про переклад довідки на словацьку мову з варіантами так/ні -->
+                    <label>Потрібен переклад довідки про&nbsp;несудимість на&nbsp;словацьку мову?</label>
+                    <label><input type="radio" name="translateCertificate" value="yes"> Так</label>
+                    <label><input type="radio" name="translateCertificate" value="no"> Ні</label>
+                </div>
+                <!-- Поле для BOK‑коду, показується лише при продовженні -->
+                <div class="form-group" id="bokCodeGroup" style="display:none;">
+                    <label>У вас є BOK‑код?</label>
+                    <label><input type="radio" name="bokCode" value="yes"> Так</label>
+                    <label><input type="radio" name="bokCode" value="no"> Ні</label>
+                </div>
+                <!-- Група далекобійника (показується після відповіді на попереднє запитання) -->
+                <div class="form-group" id="truckDriverGroup" style="display:none;">
+                    <label>Заявник буде працювати далекобійником?</label>
+                    <label><input type="radio" name="truckDriver" value="yes"> Так</label>
+                    <label><input type="radio" name="truckDriver" value="no"> Ні</label>
+                </div>
+                <!-- Адресна реєстрація -->
+                <div class="form-group" id="addressRegistrationGroup" style="display:none;">
+                    <label>Потрібна прописка (адресна реєстрація)?</label>
+                    <label><input type="radio" name="addressRegistration" value="yes"> Так</label>
+                    <label><input type="radio" name="addressRegistration" value="no"> Ні</label>
+                </div>
+
+                <!-- Опції для коду 95: тип курсу та супровід, відображаються лише коли обрано тип заявки "КОД 95" -->
+                <div class="form-group" id="code95CourseGroup" style="display:none;">
+                    <label>Курс для коду&nbsp;95:</label>
+                    <label><input type="radio" name="code95Course" value="long"> Довгий курс</label>
+                    <label><input type="radio" name="code95Course" value="short"> Короткий курс</label>
+                </div>
+                <div class="form-group" id="code95EscortGroup" style="display:none;">
+                    <label>Потрібен супровід (оплачується окремо, 30&nbsp;€/год)?</label>
+                    <label><input type="radio" name="code95Escort" value="yes"> Так</label>
+                    <label><input type="radio" name="code95Escort" value="no"> Ні</label>
+                </div>
             </div>
 
-            <!-- Поле для BOK‑коду, показується лише при продовженні -->
-            <div class="form-group" id="bokCodeGroup" style="display:none;">
-                <label>У вас є BOK‑код?</label>
-                <label><input type="radio" name="bokCode" value="yes" checked> Так</label>
-                <label><input type="radio" name="bokCode" value="no"> Ні</label>
-            </div>
         </form>
         <div class="total" id="totalCost">Загальна вартість: 0&nbsp;€</div>
+        <!-- Дії (генерація PDF та список документів) спочатку приховані; з'являються після вибору типу заявки -->
+        <div class="actions" id="actionsContainer" style="display:none;">
+            <button type="button" id="generatePdfButton">Отримати цінову пропозицію (PDF)</button>
+            <button type="button" id="showDocumentsButton">Перелік необхідних документів</button>
+        </div>
+        <div id="documentsSection" class="documents" style="display:none;">
+            <!-- Сюди будуть підставлятися документи та інструкції залежно від типу заявки -->
+        </div>
     </div>
     <script>
         // Вартість послуг та додаткові платежі
@@ -109,77 +181,392 @@
 
         const form = document.getElementById('costForm');
         const totalCostDiv = document.getElementById('totalCost');
-        const truckDriverCheckbox = document.getElementById('truckDriver');
+        // Група далекобійника
+        const truckDriverGroup = document.getElementById('truckDriverGroup');
         const addressRegistrationGroup = document.getElementById('addressRegistrationGroup');
-        const addressRegistrationCheckbox = document.getElementById('addressRegistration');
+
+        // Група перекладу довідки про несудимість
+        const translationGroup = document.getElementById('translationGroup');
 
         // Група з питанням про BOK‑код
         const bokCodeGroup = document.getElementById('bokCodeGroup');
 
+        // Вартість коду 95 (Литва): базова вартість (курс + пластик)
+        const code95BaseCost = {
+            long: 450 + 53,
+            short: 200 + 53
+        };
+        // Тариф супроводу для коду 95 (оплачується окремо)
+        const code95EscortRate = 30;
+        // Елементи для коду 95
+        const code95CourseGroup = document.getElementById('code95CourseGroup');
+        const code95EscortGroup = document.getElementById('code95EscortGroup');
+
+        // Контейнер для додаткових полів
+        const additionalFields = document.getElementById('additionalFields');
+
         function calculateTotal() {
-            // Тип заявки: 'first' або 'extension'
-            const appType = form.elements['applicationType'].value;
-            // Початкова сума: наші послуги
-            let total = serviceCost;
-            // Додаємо обов'язкові колки залежно від типу заявки
-            total += kolkyCost[appType];
-            // Опціональні послуги
-            if (form.elements['translateCertificate'].checked) {
-                total += translationCost;
+            // Визначити вибраний тип заявки; якщо жоден не вибрано, обнулити суму
+            const selectedAppRadio = form.querySelector('input[name="applicationType"]:checked');
+            const appType = selectedAppRadio ? selectedAppRadio.value : null;
+            let total = 0;
+            let note = '';
+            // Якщо тип не вибрано, просто показати нульову вартість
+            if (!appType) {
+                totalCostDiv.textContent = `Загальна вартість: 0 €`;
+                return;
             }
-            // Прописка необхідна лише коли користувач не є далекобійником
-            if (!form.elements['truckDriver'].checked && form.elements['addressRegistration'].checked) {
-                total += registrationCost;
-            }
-            // Для продовження враховуємо наявність BOK‑коду
-            if (appType === 'extension') {
-                const bokCodeValue = form.elements['bokCode'].value;
-                if (bokCodeValue === 'no') {
-                    total += bokCodeAbsentCost;
+            if (appType === 'code95') {
+                // Для коду 95 базова вартість залежить від вибраного курсу (довгий/короткий).
+                const courseType = form.elements['code95Course'].value;
+                if (courseType) {
+                    // Якщо курс обрано, використовуємо відповідну базову вартість (курс + виготовлення пластику)
+                    total = code95BaseCost[courseType];
+                } else {
+                    // Якщо курс ще не вибрано, вартість не розраховується
+                    total = 0;
+                }
+                // Якщо вибрано супровід (значення "yes"), додаємо примітку про оплату окремо
+                const escortValue = form.elements['code95Escort'].value;
+                if (escortValue === 'yes') {
+                    note = ` (Супровід оплачується окремо — ${code95EscortRate}\u00A0€/год)`;
+                }
+            } else {
+                // Звичайні типи заявок: перша подача або продовження ВНЖ
+                total = serviceCost + kolkyCost[appType];
+                // Переклад довідки враховується лише для першої подачі та коли обрано «так»
+                if (appType === 'first') {
+                    const translateValue = form.elements['translateCertificate'].value;
+                    if (translateValue === 'yes') {
+                        total += translationCost;
+                    }
+                }
+                // Визначити, чи заявник буде працювати далекобійником (так/ні)
+                const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+                const isTruck = selectedTruck && selectedTruck.value === 'yes';
+                // Прописка необхідна лише коли користувач не є далекобійником і відповів «так»
+                if (!isTruck) {
+                    const addressValue = form.elements['addressRegistration'].value;
+                    if (addressValue === 'yes') {
+                        total += registrationCost;
+                    }
+                }
+                // Для продовження враховуємо наявність BOK‑коду
+                if (appType === 'extension') {
+                    const bokCodeValue = form.elements['bokCode'].value;
+                    if (bokCodeValue === 'no') {
+                        total += bokCodeAbsentCost;
+                    }
                 }
             }
-            // Відображаємо результат
-            totalCostDiv.textContent = `Загальна вартість: ${total.toFixed(2)} €`;
+            // Відобразити результат з можливим повідомленням
+            let costText = `Загальна вартість: ${total.toFixed(2)} €`;
+            if (note) {
+                costText += note;
+            }
+            totalCostDiv.textContent = costText;
         }
 
         function handleTruckDriverChange() {
-            if (truckDriverCheckbox.checked) {
-                // Сховати поле прописки та зняти позначку
+            // Визначити вибраний варіант далекобійника (так/ні)
+            const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+            if (!selectedTruck) {
+                // Жоден варіант ще не обрано — не відображати прописку
                 addressRegistrationGroup.style.display = 'none';
-                addressRegistrationCheckbox.checked = false;
             } else {
-                // Показати поле прописки
+                // Показати питання про прописку незалежно від вибору, щоб користувач відповів «так» або «ні»
                 addressRegistrationGroup.style.display = 'block';
             }
+            // При зміні варіанту завжди перераховувати суму
             calculateTotal();
         }
 
         // Обробка зміни типу заявки (перша/продовження)
         function handleApplicationTypeChange() {
             const appType = form.elements['applicationType'].value;
-            if (appType === 'extension') {
-                bokCodeGroup.style.display = 'block';
-            } else {
+            // Показати контейнер додаткових полів, коли вибрано будь‑який тип заявки
+            additionalFields.style.display = 'block';
+            if (appType === 'code95') {
+                // Сховати усі групи, що стосуються ВНЖ
+                translationGroup.style.display = 'none';
+                // Скинути вибір перекладу (радіо)
+                Array.from(form.elements['translateCertificate']).forEach(r => r.checked = false);
                 bokCodeGroup.style.display = 'none';
+                Array.from(form.elements['bokCode']).forEach(r => r.checked = false);
+                truckDriverGroup.style.display = 'none';
+                Array.from(form.elements['truckDriver']).forEach(r => r.checked = false);
+                addressRegistrationGroup.style.display = 'none';
+                Array.from(form.elements['addressRegistration']).forEach(r => r.checked = false);
+                // Показати перше питання для коду 95 — вибір курсу
+                code95CourseGroup.style.display = 'block';
+                code95EscortGroup.style.display = 'none';
+                Array.from(form.elements['code95Escort']).forEach(r => r.checked = false);
+            } else if (appType === 'extension') {
+                // Приховати групи, що не стосуються продовження
+                code95CourseGroup.style.display = 'none';
+                code95EscortGroup.style.display = 'none';
+                Array.from(form.elements['code95Escort']).forEach(r => r.checked = false);
+                translationGroup.style.display = 'none';
+                Array.from(form.elements['translateCertificate']).forEach(r => r.checked = false);
+                // Показати перше питання — наявність BOK‑коду
+                bokCodeGroup.style.display = 'block';
+                // Приховати наступні питання до відповіді
+                truckDriverGroup.style.display = 'none';
+                Array.from(form.elements['truckDriver']).forEach(r => r.checked = false);
+                addressRegistrationGroup.style.display = 'none';
+                Array.from(form.elements['addressRegistration']).forEach(r => r.checked = false);
+            } else if (appType === 'first') {
+                // Приховати групи коду 95 та BOK‑коду
+                code95CourseGroup.style.display = 'none';
+                code95EscortGroup.style.display = 'none';
+                Array.from(form.elements['code95Escort']).forEach(r => r.checked = false);
+                bokCodeGroup.style.display = 'none';
+                Array.from(form.elements['bokCode']).forEach(r => r.checked = false);
+                // Показати перше питання для першої подачі — переклад
+                translationGroup.style.display = 'block';
+                // Приховати наступні питання до відповіді
+                truckDriverGroup.style.display = 'none';
+                Array.from(form.elements['truckDriver']).forEach(r => r.checked = false);
+                addressRegistrationGroup.style.display = 'none';
+                Array.from(form.elements['addressRegistration']).forEach(r => r.checked = false);
             }
             calculateTotal();
         }
 
+        // Налаштування для списку документів для кожного типу заявки
+        const documentsData = {
+            first: {
+                title: 'Необхідні документи для першої подачі ВНЖ',
+                items: [
+                    'Паспорт (оригінал та копія)',
+                    'Свідоцтво про народження',
+                    'Довідка про несудимість (та її переклад, якщо обрано)',
+                    'Доказ забезпечення місця проживання (прописка)',
+                    'Заповнена анкета та фотографії'
+                ]
+            },
+            extension: {
+                title: 'Необхідні документи для продовження ВНЖ',
+                items: [
+                    'Паспорт (оригінал та копія)',
+                    'Дійсна карта ВНЖ',
+                    'Підтвердження зайнятості або навчання',
+                    'BOK‑код (якщо відсутній, оформляється за додаткову плату)',
+                    'Доказ забезпечення місця проживання (прописка, якщо потрібно)'
+                ]
+            },
+            code95: {
+                title: 'Необхідні документи для коду 95 (Литва)',
+                items: [
+                    'Паспорт',
+                    'Водійське посвідчення',
+                    'Віза або карта ВНЖ (за наявності)',
+                    'Документи, необхідні для проходження обраного курсу'
+                ]
+            }
+        };
+
+        // Елементи інтерфейсу для PDF та документів
+        const generatePdfButton = document.getElementById('generatePdfButton');
+        const showDocumentsButton = document.getElementById('showDocumentsButton');
+        const documentsSection = document.getElementById('documentsSection');
+
+        generatePdfButton.addEventListener('click', generatePdf);
+        showDocumentsButton.addEventListener('click', toggleDocuments);
+
+        // Оновлює доступність кнопок PDF та документів залежно від заповненості форми
+        function updateActionButtons() {
+            const actionsContainer = document.getElementById('actionsContainer');
+            const selectedAppRadio = form.querySelector('input[name="applicationType"]:checked');
+            // Якщо не вибрано тип заявки, приховати кнопки та вийти
+            if (!selectedAppRadio) {
+                actionsContainer.style.display = 'none';
+                generatePdfButton.disabled = true;
+                showDocumentsButton.disabled = true;
+                return;
+            }
+            // Якщо вже вибрано тип заявки, показати контейнер дій
+            actionsContainer.style.display = 'block';
+            const appType = selectedAppRadio.value;
+            let ready = false;
+            if (appType === 'first') {
+                // Для першої подачі потрібні відповіді на питання про переклад, далекобійника та прописку (незалежно від того, чи буде далекобійником)
+                const translateSelected = form.querySelector('input[name="translateCertificate"]:checked');
+                const truckSelected = form.querySelector('input[name="truckDriver"]:checked');
+                const addressSelected = form.querySelector('input[name="addressRegistration"]:checked');
+                if (translateSelected && truckSelected && addressSelected) {
+                    ready = true;
+                }
+            } else if (appType === 'extension') {
+                // Для продовження потрібні відповіді на питання про BOK‑код, далекобійника та прописку
+                const bokSelected = form.querySelector('input[name="bokCode"]:checked');
+                const truckSelected = form.querySelector('input[name="truckDriver"]:checked');
+                const addressSelected = form.querySelector('input[name="addressRegistration"]:checked');
+                if (bokSelected && truckSelected && addressSelected) {
+                    ready = true;
+                }
+            } else if (appType === 'code95') {
+                // Для коду 95 потрібні вибір курсу та відповідь щодо супроводу
+                const courseSelected = form.querySelector('input[name="code95Course"]:checked');
+                const escortSelected = form.querySelector('input[name="code95Escort"]:checked');
+                if (courseSelected && escortSelected) {
+                    ready = true;
+                }
+            }
+            // Ввімкнути або вимкнути кнопки залежно від заповненості форми
+            generatePdfButton.disabled = !ready;
+            showDocumentsButton.disabled = !ready;
+        }
+
+        // Функція для генерації PDF пропозиції
+        async function generatePdf() {
+            // Переконатися, що вибрано тип заявки
+            const selectedAppRadio = form.querySelector('input[name="applicationType"]:checked');
+            if (!selectedAppRadio) {
+                alert('Будь ласка, спочатку оберіть тип заявки.');
+                return;
+            }
+            const appType = selectedAppRadio.value;
+            // Отримати читабельну назву типу англійською (PDF використовує лише ASCII, щоб уникнути проблем з шрифтами)
+            const typeLabelMap = {
+                first: 'First residence permit application',
+                extension: 'Residence permit renewal',
+                code95: 'Code 95 (Lithuania)'
+            };
+            const typeLabel = typeLabelMap[appType] || '';
+            // Зібрати обрані опції англійською мовою
+            let options = [];
+            if (appType === 'first') {
+                const translateValue = form.elements['translateCertificate'].value;
+                options.push(`Translation of criminal record certificate: ${translateValue === 'yes' ? 'yes' : 'no'}`);
+                const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+                const isTruck = selectedTruck ? selectedTruck.value === 'yes' : false;
+                options.push(`Applicant will work as a truck driver: ${isTruck ? 'yes' : 'no'}`);
+                const addressValue = form.elements['addressRegistration'].value;
+                options.push(`Accommodation registration needed: ${addressValue === 'yes' ? 'yes' : 'no'}`);
+            } else if (appType === 'extension') {
+                const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+                const isTruck = selectedTruck ? selectedTruck.value === 'yes' : false;
+                options.push(`Applicant will work as a truck driver: ${isTruck ? 'yes' : 'no'}`);
+                const addressValue = form.elements['addressRegistration'].value;
+                options.push(`Accommodation registration needed: ${addressValue === 'yes' ? 'yes' : 'no'}`);
+                const bokCode = form.elements['bokCode'].value;
+                options.push(`BOK code: ${bokCode === 'yes' ? 'present' : 'absent'}`);
+            } else if (appType === 'code95') {
+                const course = form.elements['code95Course'].value;
+                const courseLabel = course === 'long' ? 'Long course' : 'Short course';
+                options.push(`Course for Code 95: ${courseLabel}`);
+                const escortValue = form.elements['code95Escort'].value;
+                options.push(`Escort: ${escortValue === 'yes' ? 'yes (paid separately)' : 'no'}`);
+            }
+            // Отримати суму та примітку з елемента totalCost; замінити український текст на англійський
+            let totalText = totalCostDiv.textContent;
+            totalText = totalText.replace('Загальна вартість:', 'Total amount:');
+            totalText = totalText.replace('Супровід оплачується окремо —', 'Escort paid separately -');
+            // Замінити залишені довгі тире на звичайні дефіси для кращої сумісності
+            totalText = totalText.split('—').join('-');
+            // Динамічно завантажити jsPDF, якщо він ще не завантажений
+            if (!window.jspdf) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити jsPDF'));
+                    document.head.appendChild(script);
+                });
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 10;
+            doc.setFontSize(14);
+            // Використовуємо англійську назву, щоб уникнути проблем зі шрифтами
+            doc.text('Price proposal', 105, y, { align: 'center' });
+            y += 10;
+            doc.setFontSize(12);
+            doc.text(`Тип заявки: ${typeLabel}`, 10, y);
+            y += 8;
+            doc.text('Обрані опції:', 10, y);
+            y += 6;
+            options.forEach(opt => {
+                // Використовувати дефіс замість маркера "•" для сумісності
+                doc.text(`- ${opt}`, 15, y);
+                y += 6;
+            });
+            y += 2;
+            doc.setFontSize(12);
+            // Замінити український текст на англійський: Total amount
+            totalText = totalText.replace('Загальна вартість:', 'Total amount:');
+            // Вставити рядок з підсумковою сумою
+            doc.text(totalText, 10, y);
+            // Зберегти PDF
+            doc.save('price-proposal.pdf');
+        }
+
+        // Функція для показу/приховування списку документів
+        function toggleDocuments() {
+            const selectedAppRadio = form.querySelector('input[name="applicationType"]:checked');
+            if (!selectedAppRadio) {
+                alert('Будь ласка, спочатку оберіть тип заявки.');
+                return;
+            }
+            const appType = selectedAppRadio.value;
+            const data = documentsData[appType];
+            if (!data) return;
+            // Якщо вже відображено, приховати
+            if (documentsSection.style.display === 'block') {
+                documentsSection.style.display = 'none';
+                documentsSection.innerHTML = '';
+            } else {
+                // Заповнити HTML
+                let html = `<h2>${data.title}</h2><ul>`;
+                data.items.forEach(item => {
+                    html += `<li>${item}</li>`;
+                });
+                html += '</ul>';
+                documentsSection.innerHTML = html;
+                documentsSection.style.display = 'block';
+            }
+        }
+
+
         // Додати слухачі подій для всіх змін
         form.addEventListener('change', function(event) {
-            // Обробити спеціальну логіку для далекобійника
-            if (event.target.id === 'truckDriver') {
+            // Зміна статусу далекобійника (так/ні) впливає на доступність прописки
+            if (event.target.name === 'truckDriver') {
                 handleTruckDriverChange();
             }
+            // Зміна типу заявки визначає, які групи показувати
             if (event.target.name === 'applicationType') {
                 handleApplicationTypeChange();
-            } else {
-                calculateTotal();
             }
+            // Поступове відображення питань для першої подачі
+            if (event.target.name === 'translateCertificate') {
+                // Після відповіді на запитання про переклад показати питання про далекобійника
+                truckDriverGroup.style.display = 'block';
+            }
+            // Поступове відображення питань для продовження (BOK‑код) та далі
+            if (event.target.name === 'bokCode') {
+                // Після вибору BOK‑коду показати питання про далекобійника
+                truckDriverGroup.style.display = 'block';
+                // Не показувати прописку одразу — вона з'явиться після відповіді про далекобійника
+            }
+            // Поступове відображення питань для коду 95: після вибору курсу показати супровід
+            if (event.target.name === 'code95Course') {
+                code95EscortGroup.style.display = 'block';
+            }
+            // Для всіх змін перерахувати вартість
+            calculateTotal();
+            // Оновити стан кнопок після кожної зміни
+            updateActionButtons();
         });
         // Первинний розрахунок
-        // Показати/сховати поле BOK‑коду відповідно до стартового вибору
-        handleApplicationTypeChange();
+        // На початку ми нічого не показуємо, окрім вибору типу заявки, тому не викликаємо
+        // handleApplicationTypeChange(). Вартість у такому випадку дорівнює 0.
+
+        // Встановити початковий стан кнопок (вимкнені)
+        updateActionButtons();
     </script>
+
+
 </body>
 </html>
