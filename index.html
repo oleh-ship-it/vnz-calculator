@@ -245,8 +245,8 @@
                 // Визначити, чи заявник буде працювати далекобійником (так/ні)
                 const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
                 const isTruck = selectedTruck && selectedTruck.value === 'yes';
-                // Прописка необхідна лише коли користувач не є далекобійником і відповів «так»
-                if (!isTruck) {
+                // Додати вартість прописки, якщо обрано «так», незалежно від того, чи є заявник далекобійником
+                {
                     const addressValue = form.elements['addressRegistration'].value;
                     if (addressValue === 'yes') {
                         total += registrationCost;
