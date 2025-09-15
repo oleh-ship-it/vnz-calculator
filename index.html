@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
+        <!-- тестовий коментар для перевірки -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор вартості послуг - документи</title>
@@ -157,7 +158,7 @@
         <!-- Дії (генерація PDF та список документів) спочатку приховані; з'являються після вибору типу заявки -->
         <div class="actions" id="actionsContainer" style="display:none;">
             <button type="button" id="generatePdfButton">Отримати цінову пропозицію (PDF)</button>
-            <button type="button" id="showDocumentsButton">Перелік необхідних документів</button>
+            <button type="button" id="showDocumentsButton">Інструкція</button>
         </div>
         <div id="documentsSection" class="documents" style="display:none;">
             <!-- Сюди будуть підставлятися документи та інструкції залежно від типу заявки -->
@@ -371,7 +372,8 @@
         const showDocumentsButton = document.getElementById('showDocumentsButton');
         const documentsSection = document.getElementById('documentsSection');
 
-        generatePdfButton.addEventListener('click', generatePdf);
+        // Використовуємо нову функцію для PDF з українським текстом
+        generatePdfButton.addEventListener('click', generatePricePdf);
         showDocumentsButton.addEventListener('click', toggleDocuments);
 
         // Оновлює доступність кнопок PDF та документів залежно від заповненості форми
@@ -475,57 +477,452 @@
                     document.head.appendChild(script);
                 });
             }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let y = 10;
-            doc.setFontSize(14);
-            // Використовуємо англійську назву, щоб уникнути проблем зі шрифтами
-            doc.text('Price proposal', 105, y, { align: 'center' });
-            y += 10;
-            doc.setFontSize(12);
-            doc.text(`Тип заявки: ${typeLabel}`, 10, y);
-            y += 8;
-            doc.text('Обрані опції:', 10, y);
-            y += 6;
+            // Створити тимчасовий елемент з англійським текстом для PDF
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '10px';
+            tempDiv.style.fontFamily = 'Arial, sans-serif';
+            let html = `<h2 style="margin-top:0">Price proposal</h2>`;
+            html += `<p><strong>Application type:</strong> ${typeLabel}</p>`;
+            html += `<p><strong>Selected options:</strong></p><ul>`;
             options.forEach(opt => {
-                // Використовувати дефіс замість маркера "•" для сумісності
-                doc.text(`- ${opt}`, 15, y);
-                y += 6;
+                html += `<li>${opt}</li>`;
             });
-            y += 2;
-            doc.setFontSize(12);
-            // Замінити український текст на англійський: Total amount
-            totalText = totalText.replace('Загальна вартість:', 'Total amount:');
-            // Вставити рядок з підсумковою сумою
-            doc.text(totalText, 10, y);
-            // Зберегти PDF
-            doc.save('price-proposal.pdf');
+            html += `</ul>`;
+            html += `<p>${totalText.replace('Загальна вартість:', 'Total amount:')}</p>`;
+            tempDiv.innerHTML = html;
+            document.body.appendChild(tempDiv);
+            // Завантажити jsPDF, якщо не завантажений
+            if (!window.jspdf) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити jsPDF'));
+                    document.head.appendChild(script);
+                });
+            }
+            // Завантажити html2canvas, якщо не завантажений
+            if (!window.html2canvas) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити html2canvas'));
+                    document.head.appendChild(script);
+                });
+            }
+            const { jsPDF } = window.jspdf;
+            const canvas = await html2canvas(tempDiv, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('price-proposal.pdf');
+            // Прибрати тимчасовий елемент
+            document.body.removeChild(tempDiv);
         }
 
-        // Функція для показу/приховування списку документів
-        function toggleDocuments() {
+        // Функція для завантаження інструкції у PDF
+        async function downloadInstructionsPdf() {
+            // Динамічно завантажити jsPDF, якщо ще не завантажений
+            if (!window.jspdf) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити jsPDF'));
+                    document.head.appendChild(script);
+                });
+            }
+            // Динамічно завантажити html2canvas, якщо ще не завантажений
+            if (!window.html2canvas) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити html2canvas'));
+                    document.head.appendChild(script);
+                });
+            }
+            const { jsPDF } = window.jspdf;
+            const element = documentsSection;
+            // Прокрутити до елементу, щоб бути впевненим, що він видимий
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF();
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('instructions.pdf');
+        }
+
+        // Нова функція для генерації PDF українською мовою з більшим шрифтом
+        async function generatePricePdf() {
+            // Переконатися, що вибрано тип заявки
             const selectedAppRadio = form.querySelector('input[name="applicationType"]:checked');
             if (!selectedAppRadio) {
                 alert('Будь ласка, спочатку оберіть тип заявки.');
                 return;
             }
             const appType = selectedAppRadio.value;
-            const data = documentsData[appType];
-            if (!data) return;
-            // Якщо вже відображено, приховати
+            let heading = '';
+            let detailsHtml = '';
+            if (appType === 'first') {
+                // Slovak language headings and labels for first application
+                heading = 'Cenová ponuka – Prvá žiadosť o pobyt';
+                const translateValue = form.elements['translateCertificate'].value;
+                const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+                const isTruck = selectedTruck ? selectedTruck.value === 'yes' : false;
+                const addressValue = form.elements['addressRegistration'].value;
+                detailsHtml += `<p><strong>Preklad výpisu z registra trestov potrebný:</strong> ${translateValue === 'yes' ? 'áno' : 'nie'}</p>`;
+                detailsHtml += `<p><strong>Žiadateľ bude pracovať ako kamionista:</strong> ${isTruck ? 'áno' : 'nie'}</p>`;
+                detailsHtml += `<p><strong>Potrebná adresa (registrácia pobytu):</strong> ${addressValue === 'yes' ? 'áno' : 'nie'}</p>`;
+            } else if (appType === 'extension') {
+                // Slovak language headings and labels for renewal
+                heading = 'Cenová ponuka – Predĺženie pobytu';
+                const selectedTruck = form.querySelector('input[name="truckDriver"]:checked');
+                const isTruck = selectedTruck ? selectedTruck.value === 'yes' : false;
+                const addressValue = form.elements['addressRegistration'].value;
+                const bokCode = form.elements['bokCode'].value;
+                detailsHtml += `<p><strong>BOK‑kód:</strong> ${bokCode === 'yes' ? 'áno' : 'nie'}</p>`;
+                detailsHtml += `<p><strong>Žiadateľ bude pracovať ako kamionista:</strong> ${isTruck ? 'áno' : 'nie'}</p>`;
+                detailsHtml += `<p><strong>Potrebná adresa (registrácia pobytu):</strong> ${addressValue === 'yes' ? 'áno' : 'nie'}</p>`;
+            } else if (appType === 'code95') {
+                // Slovak language headings and labels for Code 95
+                heading = 'Cenová ponuka – Kód&nbsp;95 (Litva)';
+                const course = form.elements['code95Course'].value;
+                const courseLabel = course === 'long' ? 'Dlhý kurz' : 'Krátky kurz';
+                const escortValue = form.elements['code95Escort'].value;
+                detailsHtml += `<p><strong>Kurz pre Kód&nbsp;95:</strong> ${courseLabel}</p>`;
+                detailsHtml += `<p><strong>Sprievod potrebný:</strong> ${escortValue === 'yes' ? 'áno (platí sa osobitne)' : 'nie'}</p>`;
+            }
+            const totalText = totalCostDiv.textContent;
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '20px';
+            tempDiv.style.maxWidth = '600px';
+            tempDiv.style.fontFamily = 'Arial, sans-serif';
+            tempDiv.style.fontSize = '18px';
+            tempDiv.style.lineHeight = '1.6';
+            tempDiv.innerHTML = `<h2 style="margin-top:0">${heading}</h2>${detailsHtml}<p><strong>${totalText}</strong></p>`;
+            document.body.appendChild(tempDiv);
+            if (!window.jspdf) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити jsPDF'));
+                    document.head.appendChild(script);
+                });
+            }
+            if (!window.html2canvas) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не вдалося завантажити html2canvas'));
+                    document.head.appendChild(script);
+                });
+            }
+            const { jsPDF } = window.jspdf;
+            const canvas = await html2canvas(tempDiv, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('price-proposal.pdf');
+            document.body.removeChild(tempDiv);
+        }
+
+        // Функція для побудови детальної інструкції залежно від вибраних опцій
+        function getInstructions() {
+            const appRadio = form.querySelector('input[name="applicationType"]:checked');
+            if (!appRadio) return '<p>Будь ласка, оберіть тип заявки.</p>';
+            const appType = appRadio.value;
+            // Перша подача
+            if (appType === 'first') {
+                const translation = form.querySelector('input[name="translateCertificate"]:checked')?.value;
+                const address = form.querySelector('input[name="addressRegistration"]:checked')?.value;
+                if (!translation || !address) {
+                    return '<p>Будь ласка, заповніть усі необхідні поля.</p>';
+                }
+                if (translation === 'yes' && address === 'no') {
+                    return `
+<h3>ПЕРША ПОДАЧА НА ВНЖ – Переклад ✅ | Прописка ❌</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Заповнити заявку: <a href="https://noteforms.com/forms/ocp-info-6subkb" target="_blank">noteforms.com/forms/ocp-info-6subkb</a></li>
+<li>Надіслати довідку про несудимість на адресу: Mlynske nivy 54, 82109 Bratislava, Slovakia</li>
+<li>Надіслати паспорт (і ВНЖ, якщо є іншої країни ЄС)</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Suhlasne stanovisko z uradu prace</li>
+<li>Підтвердження про місце проживання (для водіїв не потрібно)</li>
+<li>Підписана заява (підпише на поліції)</li>
+<li>Довідка про несудимість</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Зарезервувати термін</li>
+<li>Запросити Suhlasne stanovisko</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+<li>Надіслати довідку на переклад (Porter.sk)</li>
+</ul>`;
+                }
+                if (translation === 'yes' && address === 'yes') {
+                    return `
+<h3>ПЕРША ПОДАЧА НА ВНЖ – Переклад ✅ | Прописка ✅</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Заповнити заявку: <a href="https://noteforms.com/forms/ocp-info-6subkb" target="_blank">noteforms.com/forms/ocp-info-6subkb</a></li>
+<li>Надіслати паспорт (і ВНЖ, якщо є іншої країни ЄС)</li>
+<li>Надіслати довідку про несудимість</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Suhlasne stanovisko z uradu prace</li>
+<li>Підтвердження про місце проживання</li>
+<li>Підписана заява (підпише на поліції)</li>
+<li>Довідка про несудимість</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Зарезервувати термін</li>
+<li>Запросити Suhlasne stanovisko</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+<li>Надіслати довідку на переклад (Porter.sk)</li>
+<li>Подати Andrej Filipek – cestne vyhlasenie vlastnika nehnutelnosti</li>
+</ul>`;
+                }
+                if (translation === 'no' && address === 'no') {
+                    return `
+<h3>ПЕРША ПОДАЧА НА ВНЖ – Переклад ❌ | Прописка ❌</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Заповнити заявку: <a href="https://noteforms.com/forms/ocp-info-6subkb" target="_blank">noteforms.com/forms/ocp-info-6subkb</a></li>
+<li>Надіслати паспорт (і ВНЖ, якщо є іншої країни ЄС)</li>
+<li>Підготувати довідку про несудимість і взяти її із собою</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Suhlasne stanovisko z uradu prace</li>
+<li>Підтвердження про місце проживання</li>
+<li>Підписана заява (підпише на поліції)</li>
+<li>Довідка про несудимість (принесе сам)</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Зарезервувати термін</li>
+<li>Запросити Suhlasne stanovisko</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+</ul>`;
+                }
+                if (translation === 'no' && address === 'yes') {
+                    return `
+<h3>ПЕРША ПОДАЧА НА ВНЖ – Переклад ❌ | Прописка ✅</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Заповнити заявку: <a href="https://noteforms.com/forms/ocp-info-6subkb" target="_blank">noteforms.com/forms/ocp-info-6subkb</a></li>
+<li>Надіслати паспорт (і ВНЖ, якщо є іншої країни ЄС)</li>
+<li>Підготувати довідку про несудимість і взяти її із собою</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Suhlasne stanovisko z uradu prace</li>
+<li>Підтвердження про місце проживання</li>
+<li>Підписана заява (підпише на поліції)</li>
+<li>Довідка про несудимість (принесе сам)</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Зарезервувати термін</li>
+<li>Запросити Suhlasne stanovisko</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+<li>Подати Andrej Filipek – cestne vyhlasenie vlastника nehnutelnosti</li>
+</ul>`;
+                }
+            }
+            // Продовження
+            if (appType === 'extension') {
+                const bok = form.querySelector('input[name="bokCode"]:checked')?.value;
+                const address = form.querySelector('input[name="addressRegistration"]:checked')?.value;
+                if (!bok || !address) {
+                    return '<p>Будь ласка, заповніть усі необхідні поля.</p>';
+                }
+                if (bok === 'yes' && address === 'no') {
+                    return `
+<h3>ПРОДОВЖЕННЯ ВНЖ – Є BOK‑код ✅ | Прописка ❌</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Особисто прийти в офіс (резервація через карту в читачці)</li>
+<li>Надати паспорт і ВНЖ</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>ВНЖ</li>
+<li>Suhlasne stanovisko</li>
+<li>Підтвердження про місце проживання (для водіїв-далекобійників не потрібно)</li>
+<li>Підписана заява</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Організувати резервацію терміну (в офісі)</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+</ul>`;
+                }
+                if (bok === 'yes' && address === 'yes') {
+                    return `
+<h3>ПРОДОВЖЕННЯ ВНЖ – Є BOK‑код ✅ | Прописка ✅</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Особисто прийти в офіс (резервація через карту в читачці)</li>
+<li>Надати паспорт і ВНЖ</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>ВНЖ</li>
+<li>Suhlasne stanovisko</li>
+<li>Підтвердження про місце проживання (для водіїв-далекобійників не потрібно)</li>
+<li>Підписана заява</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Організувати резервацію терміну (в офісі)</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+<li>Подати Andrej Filipek – cestne vyhlasenie vlastника nehnutelnosti</li>
+</ul>`;
+                }
+                if (bok === 'no' && address === 'no') {
+                    return `
+<h3>ПРОДОВЖЕННЯ ВНЖ – Немає BOK‑коду ❌ | Прописка ❌</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Особисто прийти в офіс (резервація через карту в читачці)</li>
+<li>Надати паспорт і ВНЖ</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>ВНЖ</li>
+<li>Suhlasne stanovisko</li>
+<li>Підтвердження про місце проживання (для водіїв-далекобійників не потрібно)</li>
+<li>Підписана заява</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Організувати похід у поліцію для BOK‑коду</li>
+<li>Організувати резервацію (в офісі)</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+</ul>`;
+                }
+                if (bok === 'no' && address === 'yes') {
+                    return `
+<h3>ПРОДОВЖЕННЯ ВНЖ – Немає BOK‑коду ❌ | Прописка ✅</h3>
+<p><strong>Що потрібно від кандидата:</strong></p>
+<ul>
+<li>Особисто прийти в офіс (резервація через карту в читачці)</li>
+<li>Надати паспорт і ВНЖ</li>
+</ul>
+<p><strong>Документи при подачі:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>ВНЖ</li>
+<li>Suhlasne stanovisko</li>
+<li>Підтвердження про місце проживання (для водіїв-далекобійників не потрібно)</li>
+<li>Підписана заява</li>
+</ul>
+<p><strong>Після оплати:</strong></p>
+<ul>
+<li>Організувати похід у поліцію для BOK‑коду</li>
+<li>Організувати резервацію (в офісі)</li>
+<li>Повідомити менеджера та кандидата</li>
+<li>Заповнити заяву</li>
+<li>Подати Andrej Filipek – cestne vyhlasenie vlastnika nehnutelnosti</li>
+</ul>`;
+                }
+            }
+            // КОД 95
+            if (appType === 'code95') {
+                const course = form.querySelector('input[name="code95Course"]:checked')?.value;
+                if (!course) {
+                    return '<p>Будь ласка, виберіть тип курсу.</p>';
+                }
+                if (course === 'long') {
+                    return `
+<h3>КОД 95 (Литва) – Довгий курс (1 місяць)</h3>
+<p><strong>Документи:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Водійські права</li>
+<li>Віза або ВНЖ</li>
+</ul>
+<p><strong>Поступ отримання:</strong></p>
+<ul>
+<li>Надання документів</li>
+<li>Дистанційний курс – 1 місяць</li>
+<li>Отримання PDF коду 95</li>
+<li>Резервування терміну у Вільнюсі</li>
+<li>Особистий візит у Вільнюс (до 13:00)</li>
+<li>Отримання пластику в той самий день</li>
+</ul>`;
+                }
+                if (course === 'short') {
+                    return `
+<h3>КОД 95 (Литва) – Короткий курс (1 тиждень)</h3>
+<p><strong>Документи:</strong></p>
+<ul>
+<li>Паспорт</li>
+<li>Водійські права</li>
+<li>Віза або ВНЖ</li>
+</ul>
+<p><strong>Поступ отримання:</strong></p>
+<ul>
+<li>Надання документів</li>
+<li>Дистанційний курс – 1 тиждень</li>
+<li>Отримання PDF коду 95</li>
+<li>Резервування терміну у Вільнюсі</li>
+<li>Особистий візит у Вільнюс (до 13:00)</li>
+<li>Отримання пластику в той самий день</li>
+</ul>`;
+                }
+            }
+            return '<p>Інструкція недоступна для вибраних опцій.</p>';
+        }
+
+        // Функція для показу/приховування інструкції
+        function toggleDocuments() {
+            // Якщо інструкція вже відображена, приховати її
             if (documentsSection.style.display === 'block') {
                 documentsSection.style.display = 'none';
                 documentsSection.innerHTML = '';
-            } else {
-                // Заповнити HTML
-                let html = `<h2>${data.title}</h2><ul>`;
-                data.items.forEach(item => {
-                    html += `<li>${item}</li>`;
-                });
-                html += '</ul>';
-                documentsSection.innerHTML = html;
-                documentsSection.style.display = 'block';
+                return;
             }
+            // Отримати HTML інструкції та відобразити
+            const content = getInstructions();
+            documentsSection.innerHTML = content;
+            // Додати кнопку для завантаження інструкції у PDF
+            const btn = document.createElement('button');
+            btn.id = 'downloadInstructionsPdfButton';
+            btn.textContent = 'Скачати інструкцію в PDF';
+            btn.style.marginTop = '10px';
+            btn.addEventListener('click', downloadInstructionsPdf);
+            documentsSection.appendChild(btn);
+            documentsSection.style.display = 'block';
         }
 
 
