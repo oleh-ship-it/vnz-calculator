@@ -597,14 +597,32 @@
                 detailsHtml += `<p><strong>Kurz pre Kód&nbsp;95:</strong> ${courseLabel}</p>`;
                 detailsHtml += `<p><strong>Sprievod potrebný:</strong> ${escortValue === 'yes' ? 'áno (platí sa osobitne)' : 'nie'}</p>`;
             }
-            const totalText = totalCostDiv.textContent;
+            // Отримати текст підсумку і перекласти на словацьку
+            // totalCostDiv.textContent має вигляд «Загальна вартість: XXX €»
+            // та може містити примітку про супровід. Замінюємо україномовні частини
+            let totalText = totalCostDiv.textContent;
+            // замінити назву загальної суми
+            totalText = totalText.replace(/Загальна\s+вартість/gi, 'Celková suma');
+            // замінити примітку про супровід, якщо присутня
+            totalText = totalText.replace('Супровід оплачується окремо', 'Sprievod sa platí osobitne');
+
             const tempDiv = document.createElement('div');
-            tempDiv.style.padding = '20px';
+            // Стилізація для привабливого вигляду PDF
+            tempDiv.style.padding = '24px';
             tempDiv.style.maxWidth = '600px';
             tempDiv.style.fontFamily = 'Arial, sans-serif';
             tempDiv.style.fontSize = '18px';
             tempDiv.style.lineHeight = '1.6';
-            tempDiv.innerHTML = `<h2 style="margin-top:0">${heading}</h2>${detailsHtml}<p><strong>${totalText}</strong></p>`;
+            tempDiv.style.backgroundColor = '#f8f9fa';
+            tempDiv.style.border = '1px solid #e0e0e0';
+            tempDiv.style.borderRadius = '8px';
+            tempDiv.style.color = '#333';
+            // Скласти HTML з виділеним заголовком та кольоровими акцентами
+            tempDiv.innerHTML = `
+                <h2 style="margin-top:0; color:#0A74DA; font-size:24px;">${heading}</h2>
+                ${detailsHtml}
+                <p style="font-weight:bold; font-size:20px; margin-top:16px;">${totalText}</p>
+            `;
             document.body.appendChild(tempDiv);
             if (!window.jspdf) {
                 await new Promise((resolve, reject) => {
